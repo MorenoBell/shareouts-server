@@ -92,44 +92,36 @@ const searchUsers = async (rq, res) => {
   const { description, userId } = rq.body;
   const list = description.split(' ');
   const optRegexp = [];
-  list.forEach(function (opt) {
-    if (opt)
-      optRegexp.push(new RegExp(opt, "i"));
-  });
+  const loggedUser = await User.findById(userId);
+  if (loggedUser) {
 
-  if (optRegexp.length == 1) {
-
-    const dbUsers = await User.find({
-      $or: [{ name: { $in: optRegexp } },
-      { lastName: { $in: optRegexp } }]
-    }, '_id name lastName friends').sort({ importance: -1 });
-    const users = [];
-    dbUsers.forEach(user => {
-      let addable = false;
-      if (user.friends.find(x => x._id == userId) || user._id == userId) {
-        addable = false;
-      }
-      else {
-        addable = true;
-      }
-      users.push({ ...user.toObject(), addable: addable });
+    list.forEach(function (opt) {
+      if (opt)
+        optRegexp.push(new RegExp(opt, "i"));
     });
-    res.status(201).json({
-      users
-    })
-  }
-  else {
-    const users = await User.find(
-      {
-        name: { $in: optRegexp },
-        lastName: { $in: optRegexp }
-      }
-      , '_id name lastName').sort({ importance: -1 });
-    res.status(201).json({
-      users
-    })
-  }
 
+    if (optRegexp.length == 1) {
+
+      const dbUsers = await User.find({
+        $or: [{ name: { $in: optRegexp } },
+        { lastName: { $in: optRegexp } }]
+      }).sort({ importance: -1 });
+      const users = [];
+      dbUsers.forEach(user => {
+        let addable = false;
+        if (loggedUser.friends.filter(x => x.toString() == user._id.toString()).length > 0 || user._id == userId) {
+          addable = false;
+        }
+        else {
+          addable = true;
+        }
+        users.push({ '_id': user._id, 'name': user.name, 'lastName': user.lastName, 'addable': addable });
+      });
+      res.status(201).json({
+        users
+      })
+    }
+  }
 
 }
 

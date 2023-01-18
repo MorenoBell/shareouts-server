@@ -1,14 +1,15 @@
 const Post = require('../models/Post');
 const User = require('../models/User');
+const Comment = require('../models/Comment');
 
 const getPosts = async (req, res) => {
-  const { userId, userToSearchId } = req.body;
+  const { userId, userToSearchId, start, range } = req.body;
   let posts = [];
   if (userToSearchId) {
-    posts = await Post.find({ creator: userToSearchId });
+    posts = await Post.find({ creator: userToSearchId }).sort({ _id: -1 }).skip(start).limit(range);
   }
   else {
-    posts = await Post.find();
+    posts = await Post.find().sort({ _id: -1 }).skip(start).limit(range);
   }
   const ritorno = [];
   for (const element of posts) {
@@ -18,6 +19,12 @@ const getPosts = async (req, res) => {
     ritorno.push({ ...element.toObject(), "creatorDescription": creatorDesc, deletable })
   };
   return res.status(201).json(ritorno);
+}
+
+const editPost = async (rq, res) => {
+  const { postId, text } = rq.body;
+  await Post.findOneAndUpdate({ _id: postId }, { description: text });
+  res.status(201).json(text);
 }
 
 const newPost = async (rq, res) => {
@@ -31,13 +38,12 @@ const newPost = async (rq, res) => {
 
 const deletePost = async (rq, res) => {
   const { userId, postId } = rq.body;
-  const post = await Post.findOne({ id: postId, creator: userId });
+  await Post.deleteOne({ _id: postId });
+  await Comment.deleteMany({ post: postId });
   const user = await User.findById(userId);
-  if (post) {
-    await post.remove();
+  if (user) {
     await user.posts.pull(postId);
     res.status(201).json({ 'status': true });
-
   }
   else {
     res.status(201).json({ 'status': false });
@@ -63,4 +69,4 @@ const likePost = async (rq, res) => {
 }
 
 
-module.exports = { getPosts, newPost, likePost, deletePost };
+module.exports = { getPosts, editPost, newPost, likePost, deletePost };

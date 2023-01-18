@@ -3,6 +3,7 @@ const router = express.Router()
 const userController = require('./controllers/userController');
 const friendsController = require('./controllers/friendsController');
 const postController = require('./controllers/PostController');
+const commentsController = require('./controllers/commentsController');
 
 router.post('/createNewUser', userController.createNewUser);
 router.post('/deleteUser', userController.deleteUser);
@@ -16,5 +17,9 @@ router.post('/removeFriend', friendsController.removeFriend);
 router.post('/newPost', postController.newPost);
 router.post('/likePost', postController.likePost);
 router.post('/deletePost', postController.deletePost);
+router.post('/getCommentsByPost', commentsController.getCommentsByPost);
+router.post('/newComment', commentsController.newComment);
+router.post('/editComment', commentsController.editComment);
+router.post('/editPost', postController.editPost);
 
 module.exports = router

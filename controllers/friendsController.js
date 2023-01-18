@@ -12,10 +12,9 @@ const getFriends = async (rq, res) => {
 const removeFriend = async (rq, res) => {
   const { userId, id } = rq.body;
   const loggedUser = await User.findOneAndUpdate({ _id: userId }, { "$pull": { "friends": id } });
-  const user = await User.findOneAndUpdate({ _id: id }, { "$pull": { "friends": userId } });
-  if (loggedUser && user) {
+  // const user = await User.findOneAndUpdate({ _id: id }, { "$pull": { "friends": userId } });
+  if (loggedUser) {
     await loggedUser.save();
-    await user.save();
     return res.status(201).json({ "success": "ok" });
   }
   else {
@@ -27,10 +26,9 @@ const removeFriend = async (rq, res) => {
 const addFriend = async (rq, res) => {
   const { loggedUserId, userToAddId } = rq.body;
   const loggedUser = await User.findOneAndUpdate({ _id: loggedUserId }, { "$push": { "friends": userToAddId } });
-  const userToAdd = await User.findOneAndUpdate({ _id: userToAddId }, { "$push": { "friends": loggedUserId } });
-  if (loggedUser && userToAdd) {
+  // const userToAdd = await User.findOneAndUpdate({ _id: userToAddId }, { "$push": { "friends": loggedUserId } });
+  if (loggedUser) {
     await loggedUser.save();
-    await userToAdd.save();
     return res.status(201).json({ "success": "ok" });
   }
   else {
